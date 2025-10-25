@@ -1,8 +1,7 @@
 const express = require("express");
 const app = express();
 
-process.loadEnvFile();
-const PORT = process.env.PORT;
+const PORT = 8000;
 
 let pokemons = [
   {
