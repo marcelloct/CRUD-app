@@ -15,7 +15,7 @@ MongoClient.connect(connectionString)
   .then((client) => {
     const db = client.db("currentMovies");
     const collection = db.collection("movies");
-    console.log(`Connected to ${db} Database, Collection: ${collection}`);
+    console.log(`Connected to Database`);
 
     // Template engine
     app.set("view engine", "ejs");
@@ -25,12 +25,28 @@ MongoClient.connect(connectionString)
     app.use(express.static("public"));
     app.use(express.json());
 
+    // Render index with db data
     app.get("/", (request, response) => {
       collection
         .find()
         .toArray()
         .then((results) => {
           response.render("index.ejs", { info: results });
+        })
+        .catch((err) => console.error(err));
+    });
+
+    // Post Movie
+    app.post("/addMovie", (request, response) => {
+      collection
+        .insertOne({
+          title: request.body.title,
+          genre: request.body.genre,
+          likes: 0,
+        })
+        .then((result) => {
+          console.log("Movie Added Successfully");
+          response.redirect("/");
         })
         .catch((err) => console.error(err));
     });
@@ -51,3 +67,5 @@ app.get("/api/:title", (request, response) => {
 app.listen(process.env.PORT || PORT, () => {
   console.log(`Running Server on http://localhost:8000`);
 });
+
+// Add .sort({likes: -1}) method before toArray in app.get('/')
