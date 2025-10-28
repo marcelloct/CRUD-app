@@ -36,7 +36,7 @@ MongoClient.connect(connectionString)
         .catch((err) => console.error(err));
     });
 
-    // Post Movie
+    // POST Movie
     app.post("/addMovie", (request, response) => {
       collection
         .insertOne({
@@ -47,6 +47,17 @@ MongoClient.connect(connectionString)
         .then((result) => {
           console.log("Movie Added Successfully");
           response.redirect("/");
+        })
+        .catch((err) => console.error(err));
+    });
+
+    // DELETE Movie
+    app.delete("/deleteMovie", (request, response) => {
+      collection
+        .deleteOne({ title: request.body.title })
+        .then((result) => {
+          console.log(`${request.body.title} removed successfully`);
+          response.json("Movie Deleted");
         })
         .catch((err) => console.error(err));
     });
