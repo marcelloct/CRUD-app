@@ -1,34 +1,51 @@
 const express = require("express");
+const MongoClient = require("mongodb").MongoClient;
+
 const app = express();
 
+process.loadEnvFile();
 const PORT = 8000;
+const ADMIN = process.env.DB_ADMIN;
+const PASSWORD = process.env.DB_PASSWORD;
 
-let pokemons = [
-  {
-    id: 1,
-    name: "pikachu",
-    type: "electric",
-  },
-  {
-    id: 2,
-    name: "raichu",
-    type: "electric",
-  },
-];
+const connectionString = `mongodb+srv://${ADMIN}:${PASSWORD}@cluster0.veax5p4.mongodb.net/?appName=Cluster0`;
 
-app.get("/", (request, response) => {
-  response.sendFile(__dirname + "/index.html");
-});
+// Database Connection
+MongoClient.connect(connectionString)
+  .then((client) => {
+    const db = client.db("currentMovies");
+    const collection = db.collection("movies");
+    console.log(`Connected to ${db} Database, Collection: ${collection}`);
+
+    // Template engine
+    app.set("view engine", "ejs");
+
+    // Make sure you place this before your CRUD handlers!
+    app.use(express.urlencoded({ extended: true }));
+    app.use(express.static("public"));
+    app.use(express.json());
+
+    app.get("/", (request, response) => {
+      collection
+        .find()
+        .toArray()
+        .then((results) => {
+          response.render("index.ejs", { info: results });
+        })
+        .catch((err) => console.error(err));
+    });
+  })
+  .catch((err) => console.error(`error: ${err}`));
 
 app.get("/api", (request, response) => {
-  response.json(pokemons);
+  response.json(movies);
 });
 
-app.get("/api/:name", (request, response) => {
-  const pokemonName = request.params.name.toLowerCase();
-  const pokemon = pokemons.find((p) => p.name === pokemonName);
+app.get("/api/:title", (request, response) => {
+  const movieTitle = request.params.title.toLowerCase();
+  const movie = movies.find((m) => m.title === movieTitle);
 
-  pokemon ? response.json(pokemon) : response.status(404).end();
+  movie ? response.json(movie) : response.status(404).end();
 });
 
 app.listen(process.env.PORT || PORT, () => {
