@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+  </head>
+  <body>
+    <h1>Current Movies</h1>
+    <ul class="movies">
+      <%for(let i = 0; i < info.length; i++){%>
+      <li class="movie">
+        <span><%= info[i].title %></span>
+        <small><%= info[i].genre %></small>
+        <i class="fa fa-thumbs-up"></i>
+        <i class="fa fa-trash"></i>
+      </li>
+      <%}%>
+    </ul>
+
+    <form action="/addMovie" method="post">
+      <input type="text" placeholder="Title" name="title" />
+      <input type="text" placeholder="Genre" name="genre" />
+      <input type="submit" />
+    </form>
+
+    <script src="js/main.js"></script>
+  </body>
+</html>
