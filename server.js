@@ -8,13 +8,15 @@ const PORT = 8000;
 const ADMIN = process.env.DB_ADMIN;
 const PASSWORD = process.env.DB_PASSWORD;
 
+let db, collection;
+
 const connectionString = `mongodb+srv://${ADMIN}:${PASSWORD}@cluster0.veax5p4.mongodb.net/?appName=Cluster0`;
 
 // Database Connection
 MongoClient.connect(connectionString)
   .then((client) => {
-    const db = client.db("currentMovies");
-    const collection = db.collection("movies");
+    db = client.db("currentMovies");
+    collection = db.collection("movies");
     console.log(`Connected to Database`);
 
     // Template engine
@@ -25,18 +27,19 @@ MongoClient.connect(connectionString)
     app.use(express.static("public"));
     app.use(express.json());
 
-    // Render index with db data
+    // GET Method - Render index with data
     app.get("/", (request, response) => {
       collection
         .find()
         .toArray()
         .then((results) => {
           response.render("index.ejs", { info: results });
+          console.log(results);
         })
         .catch((err) => console.error(err));
     });
 
-    // POST Movie
+    // POST Method
     app.post("/addMovie", (request, response) => {
       collection
         .insertOne({
@@ -46,12 +49,13 @@ MongoClient.connect(connectionString)
         })
         .then((result) => {
           console.log("Movie Added Successfully");
+          console.log(result);
           response.redirect("/");
         })
         .catch((err) => console.error(err));
     });
 
-    // DELETE Movie
+    // DELETE Method
     app.delete("/deleteMovie", (request, response) => {
       collection
         .deleteOne({ title: request.body.title })
@@ -61,19 +65,31 @@ MongoClient.connect(connectionString)
         })
         .catch((err) => console.error(err));
     });
+    // PUT Method
+    app.put("/addLike", (request, response) => {
+      // collection
+      //   .updateOne(
+      //     { title: request.body.title, likes: request.body.likes },
+      //     {
+      //       $set: {
+      //         likes: request.body.likes + 1,
+      //       },
+      //     },
+      //     {
+      //       sort: { _id: -1 },
+      //       upsert: false, // Do not insert new doc if not found
+      //     }
+      //   )
+      //   .then((result) => {
+      //     console.log("Added One"); // Log confirmation
+      //     response.json("Added One"); // Send JSON response
+      //   })
+      //   .catch((error) => console.error(error));
+    });
+
+    // End of connection
   })
   .catch((err) => console.error(`error: ${err}`));
-
-app.get("/api", (request, response) => {
-  response.json(movies);
-});
-
-app.get("/api/:title", (request, response) => {
-  const movieTitle = request.params.title.toLowerCase();
-  const movie = movies.find((m) => m.title === movieTitle);
-
-  movie ? response.json(movie) : response.status(404).end();
-});
 
 app.listen(process.env.PORT || PORT, () => {
   console.log(`Running Server on http://localhost:8000`);
